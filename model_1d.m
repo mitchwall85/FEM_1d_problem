@@ -1,5 +1,3 @@
-
-
 function [x,d] = model_1d(k, n_el, kalla, f, g_0, g_L, L)
 %{
 OUTPUTS:
