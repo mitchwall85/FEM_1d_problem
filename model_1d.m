@@ -24,7 +24,6 @@ dx = L/n_el; % assumed evenly spaced
 
 %% k = 1
 % 3 element galerkin
-x = [0, 1/3, 2/3, 1];   
 x = linspace(0, L, n_el + 1);
 basis = zeros(n_el - 1, n_el - 1);
 for n = 1:length(basis)
@@ -32,12 +31,8 @@ for n = 1:length(basis)
 
 end
 
-k = zeros(n_nodes - 1, n_nodes - 1);
-k = -[6, -3; -3, 6];
-f = zeros(2,1);
-for a = 1:2
-    f(a) = trapz(x_c,x_c.*basis(a,:));
-end
+%{
+
 
 d = k\f;
 u_gal1 = zeros(1,length(x_c));
@@ -45,6 +40,45 @@ for i = 1:2
     u_gal1 = u_gal1 + d(i)*basis(i,:);
 end
 u_gal1_err = 100*(u_gal1-u_an(1:14:end))./(u_an(1:14:end));
+%}
+
+%% Element Assembly
+n = n_nodes - 1; % number of DOF
+
+% Assemble IEN matrix
+IEN_mat = zeros(n_el,k+1);
+for e = 1:n_el % loop over elements
+    for a = 1:k+1 % loop over nodes
+        IEN_mat(e,a) = IEN(k,a,e);
+    end
+end
+
+% loop over elements 
+for e = 1:n_el % loop over elements
+    for a = 1:k+1 % loop over nodes
+        if 1 <= IEN_mat(e,a) && IEN_mat(e,a) <= n
+            for b = 1:k+1
+                B = IEN(b,e);
+                if 1 <= B && B <= n
+                    k = 2/dx*trapz(kappa(x0+xi)*dbasis(a)*db n asis(b));
+                    
+                    K(A,B) = K(A,B) + k_ab;
+                
+                elseif B == 0
+                    F(A) = F(A) - k_ab*g_0;
+        
+                elseif b == n+1
+                    F(A) = F(A) - k_ab*g_L;
+                
+                end
+            end
+            F(A) = F(A) + f = 2/dx*trapz(f(x0+xi)*basis(a))
+        end
+    end
+end
+
+a = 1;
+
 
 
 
