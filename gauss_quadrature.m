@@ -12,7 +12,7 @@ function [kab, fa] = gauss_quadrature(x_0, x_L, k, kappa, f, basis, dbasis, a, b
         w = w_q(q);
 
         x_phys = x_0 + (x_L - x_0)*(xi + 1)/2; % physical x location
-        disp(x_phys)
+%         disp(x_phys)
         kappa_q = kappa(x_phys); % should be at physical locations
         f_q = f(x_phys);
 

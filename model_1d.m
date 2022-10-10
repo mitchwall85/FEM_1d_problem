@@ -53,8 +53,8 @@ for e = 1:n_el % loop over elements
         if 1 <= A && A <= n % bounds might be 2 & n-1 here...
             for b = 1:k+1
                 B = IEN(b,e);
-%                 disp(A)
-%                 disp(B)
+                disp(A)
+                disp(B)
                 if 1 <= B && B <= n
                     [kab,fa] = gauss_quadrature(x_0, x_L, k, kappa, f, basis, dbasis, a, b);
                     K(A,B) = K(A,B) + kab;
