@@ -9,9 +9,9 @@ clear; clc; close all;
 k = 1;
 n_el = 5;
 kappa = @(x) x;
-f = @(x) x;
+f = @(x) 6*x - sin(x);
 g_0 = 0;
-g_L = 0;
+g_L = 1.8415;
 L = 1;
 
 [x_fem,u_fem] = model_1d(k, n_el, kappa, f, g_0, g_L, L);
@@ -23,10 +23,10 @@ L = 1;
 
 x = linspace(0,1,10);
 u = @(x) x.^3 + sin(x);
-f = @(x) 6*x - sin(x);
 
 % plot
 figure()
+hold on
 plot(x,u(x))
 plot(x_fem, u_fem)
 legend('Manufactured Solution','Galerkin Solution')
