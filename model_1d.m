@@ -1,4 +1,4 @@
-function [x,d] = model_1d(k, n_el, kappa, f, g_0, g_L, L)
+function [x,u] = model_1d(k, n_el, kappa, f, g_0, g_L, L)
 %{
 OUTPUTS:
 x: location of nodes
@@ -17,69 +17,70 @@ L: length of domain
 
 %% General Values
 n_nodes = n_el + 1;
-K = zeros(n_el - 1, n_el - 1);
-F = zeros(n_el, 1);
+K = zeros(n_nodes - 2, n_nodes - 2);
+F = zeros(n_nodes - 2, 1);
 dx = L/n_el; % assumed evenly spaced
+x = linspace(0, L, n_nodes);
 
 
-%% k = 1
-% 3 element galerkin
-x = linspace(0, L, n_el + 1);
-basis = zeros(n_el - 1, n_el - 1);
-for n = 1:length(basis)
-    basis(n,n) = 1; 
-
-end
-
-%{
-
-
-d = k\f;
-u_gal1 = zeros(1,length(x_c));
-for i = 1:2
-    u_gal1 = u_gal1 + d(i)*basis(i,:);
-end
-u_gal1_err = 100*(u_gal1-u_an(1:14:end))./(u_an(1:14:end));
-%}
+%%
+% hard code basis fcns
+% basis
+basis{1} = @(x) 0.5 - 0.5*x;
+basis{2} = @(x) 0.5 + 0.5*x;
+% dbasis
+dbasis{1} = @(x) -0.5;
+dbasis{2} = @(x)  0.5;
 
 %% Element Assembly
-n = n_nodes - 1; % number of DOF
+n = n_nodes - 2; % subtract boundaries
 
 % Assemble IEN matrix
-IEN_mat = zeros(n_el,k+1);
+IEN = zeros(k+1,n_el);
 for e = 1:n_el % loop over elements
     for a = 1:k+1 % loop over nodes
-        IEN_mat(e,a) = IEN(k,a,e);
+        IEN(a,e) = k*(e-1)+(a-1);
     end
 end
 
 % loop over elements 
 for e = 1:n_el % loop over elements
+    x_0 = n_el*(e-1); % location of start of element
+    x_L = n_el*e; % location of end of element
+    
     for a = 1:k+1 % loop over nodes
-        if 1 <= IEN_mat(e,a) && IEN_mat(e,a) <= n
+        A = IEN(a,e);
+        if 1 <= A && A <= n % bounds might be 2 & n-1 here...
             for b = 1:k+1
                 B = IEN(b,e);
+                disp(A)
+                disp(B)
                 if 1 <= B && B <= n
-                    k = 2/dx*trapz(kappa(x0+xi)*dbasis(a)*db n asis(b));
-                    
-                    K(A,B) = K(A,B) + k_ab;
-                
+                    [kab,fa] = gauss_quadrature(x_0, x_L, k, kappa, f, basis, dbasis);
+                    K(A:A+k,B:B+k) = K(A:A+k,B:B+k) + kab;
+                    stuff = 1;
                 elseif B == 0
-                    F(A) = F(A) - k_ab*g_0;
+                    [kab,fa] = gauss_quadrature(x_0, x_L, k, kappa, f, basis, dbasis);
+                    F(A) = F(A) - kab(2,2)*g_0; % jank fix to apply bc
         
                 elseif b == n+1
-                    F(A) = F(A) - k_ab*g_L;
+                    [kab,fa] = gauss_quadrature(x_0, x_L, k, kappa, f, basis, dbasis);
+                    F(A) = F(A) - kab(1,1)*g_L; % jank fix to apply bc
                 
                 end
             end
-            F(A) = F(A) + f = 2/dx*trapz(f(x0+xi)*basis(a))
+            [kab,fa] = gauss_quadrature(x_0, x_L, k, kappa, f, basis, dbasis);
+            F(A:A+k) = F(A:A+k) + fa;
         end
     end
 end
 
-a = 1;
 
-
+d = K\F;
+u = zeros(n_el - 1, 1);
+for i = 1:n_el - 1
+    u = u + d(i)*basis{i}(x);
+end
 
 
 
