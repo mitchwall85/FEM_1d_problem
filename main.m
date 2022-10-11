@@ -5,13 +5,13 @@
 clear; clc; close all;
 
 %% Problem 2: Analitical Soln
-k_order = [3];
+k_order = [1, 2, 3];
 % n_el = [3]; % idk lets try these values
-n_el = [3, 2^2, 2^3, 2^4, 2^5, 2^6];
+n_el = [1, 3, 2^2, 2^3, 2^4, 2^5, 2^6];
 kappa = @(x) 1;
 f = @(x) -6*x + sin(x);
 g_0 = 0;
-g_L = 1.8415;
+g_L = 1.841470984807897;
 L = 1;
 
 norm_mat = zeros(length(n_el), length(k_order));
@@ -27,7 +27,7 @@ for k = 1:length(k_order)
         % calculate norms
         norm_mat(el, k) = norm; 
 
-        % {
+        %{
         % plot
         figure()
         hold on
@@ -47,7 +47,7 @@ for k = 1:length(k_order)
 end
 
 % plot convergence
-xlabel('Grid Spacing [1/m]')
+xlabel('Element Spacing [m]')
 ylabel('H1 Norm')
 legend
 set(gca,'XScale','log');
@@ -102,7 +102,7 @@ g_L = u_end;
 [x_rod,u_rod] = model_1d(k, n_el, kappa, f, g_0, g_L, L);
 
 % find du
-[~, du_rod] = deriv_fd_cd(x_rod, u_rod);
+[~, du_rod] = deriv_fd_cd(x_rod, u_rod); % TODO use quadrature here
 % calculate stress
 sigma = E*du_rod; % fix dimention issue
 
