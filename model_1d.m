@@ -1,4 +1,5 @@
-function [x,u, norm] = model_1d(k, n_el, kappa, f, g_0, g_L, L, u_an, du_an)
+function [x, u, du, norm] = model_1d(varargin)
+% function [x,u, norm] = model_1d(k, n_el, kappa, f, g_0, g_L, L, u_an, du_an)
 %{
 OUTPUTS:
 x: location of nodes
@@ -15,6 +16,14 @@ L: length of domain
 u_an: analitcal soln  
 
 %}
+%% Organize inputs, leave analitical solutions for calculating H1 norm
+k = varargin{1};
+n_el = varargin{2};
+kappa = varargin{3};
+f = varargin{4};
+g_0 = varargin{5};
+g_L = varargin{6};
+L = varargin{7};
 
 %% General Values
 dof = n_el - 1 + n_el*(k - 1);
@@ -57,15 +66,15 @@ switch k
 
     case 3
         % basis
-        basis{1} = @(x)   27/48*(-1/9 + 1/9*x + x.^2 - x.^3);
-        basis{2} = @(x)   27/16*(1/3 - x - 1/3*x.^2 + x.^3);
-        basis{3} = @(x)   27/16*(1/3 + x - 1/3*x.^2 - x.^3);
-        basis{4} = @(x)  -9/16* (1/9 + x/9 - x.^2 - x.^3);
+        basis{1} = @(x)   27/48*(-1/9 + 1/9*x + x.^2     - x.^3);
+        basis{2} = @(x)   27/16*(1/3  - x     - 1/3*x.^2 + x.^3);
+        basis{3} = @(x)   27/16*(1/3  + x     - 1/3*x.^2 - x.^3);
+        basis{4} = @(x)  -9/16* (1/9  + x/9    - x.^2    - x.^3);
         % dbasis
-        dbasis{1} = @(x)  27/48*(1/9 + 2*x - 3*x.^2);
+        dbasis{1} = @(x)  27/48*(1/9 + 2*x   - 3*x.^2);
         dbasis{2} = @(x)  27/16*( -1 - 2/3*x + 3*x.^2);
-        dbasis{3} = @(x)  27/16*(1 - 2/3*x - 3*x.^2);
-        dbasis{4} = @(x) -9/16* (1/9 - 2*x - 3*x.^2);
+        dbasis{3} = @(x)  27/16*  (1 - 2/3*x - 3*x.^2);
+        dbasis{4} = @(x) -9/16* (1/9 - 2*x   - 3*x.^2);
         % x = linspace(-1,1,10) % test domain
 
         % quadrature
@@ -128,8 +137,15 @@ end
 d = K\F;
 u = [g_0; d; g_L];
 
-% need to transform basis fcns again
-[norm] = H1_norm(u, u_an, du_an, basis, dbasis, L, xi_q, w_q, IEN);
+% compute norm if analitical solutions are given
+if numel(varargin) > 7
+    u_an = varargin{8};
+    du_an = varargin{9};
+    [norm] = H1_norm(u, u_an, du_an, basis, dbasis, L, xi_q, w_q, IEN);
+end
+
+% compute first derivative
+[x, du] = deriv(x, u, dbasis, IEN, L);
 
 
 end
